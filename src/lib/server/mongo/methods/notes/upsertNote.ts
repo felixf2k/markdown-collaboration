@@ -1,10 +1,9 @@
-import { collection } from '$db/client';
-import { NOTE_COLLECTION } from '$db/constants';
+import { notes } from '$db/client';
 import type { Note } from '$lib/schemas';
 
-// Throws
+/** Throws */
 export const upsertNote = async (note: Note) => {
-    await collection<Note>(NOTE_COLLECTION).findOneAndUpdate(
+    await notes.findOneAndUpdate(
         { id: note.id },
         { $set: note },
         { upsert: true },

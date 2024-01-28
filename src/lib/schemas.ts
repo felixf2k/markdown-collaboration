@@ -2,7 +2,7 @@ import z from 'zod';
 
 export const NoteSchema = z.object({
     id: z.string(),
-    title: z.string().min(1),
+    title: z.string(),
     content: z.string(),
 });
 export type Note = z.infer<typeof NoteSchema>;
@@ -19,7 +19,7 @@ export const WSMessageSchema = z.union([
     z.object({
         type: z.literal('update'),
         id: z.string(),
-        content: NoteSchema,
+        content: NoteSchema.omit({ id: true }),
     }),
     z.object({
         type: z.literal('error'),

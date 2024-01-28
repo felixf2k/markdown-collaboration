@@ -1,22 +1,29 @@
+import { browser } from '$app/environment';
 import type { Note, WSMessage } from '$lib/schemas';
 import { writable } from 'svelte/store';
 
-const ws = new WebSocket('ws://localhost:8080');
+const ws = createWebSocket();
 const subscribtion = new Map<string, (message: WSMessage) => void>();
 
-ws.addEventListener('message', (event) => {
-    try {
-        const message = JSON.parse(event.data) as WSMessage;
-        const handler = subscribtion.get(message.id);
-        if (!handler) {
-            unsubscribeFromRemote(message.id);
-            return;
+function createWebSocket() {
+    if (!browser) return undefined as unknown as WebSocket;
+    let ws = new WebSocket('ws://localhost:8080');
+
+    ws.addEventListener('message', (event) => {
+        try {
+            const message = JSON.parse(event.data) as WSMessage;
+            const handler = subscribtion.get(message.id);
+            if (!handler) {
+                unsubscribeFromRemote(message.id);
+                return;
+            }
+            handler(message);
+        } catch (error) {
+            console.error(error);
         }
-        handler(message);
-    } catch (error) {
-        console.error(error);
-    }
-});
+    });
+    return ws;
+}
 
 function unsubscribeFromRemote(id: string) {
     return () => {
@@ -41,20 +48,23 @@ function subscribeToRemote(id: string, handler: (msg: WSMessage) => void) {
 }
 
 export function createNoteStore(id: string) {
-    const { set, subscribe } = writable<Note>(undefined, () =>
-        unsubscribeFromRemote(id),
+    const { set, subscribe } = writable<Note>(
+        { content: '', id: '', title: '' },
+        (set) => {
+            subscribeToRemote(id, (msg) => {
+                console.log(msg);
+                if (msg.type !== 'update') return;
+                if (msg.id !== id) {
+                    console.error(
+                        `expected message with id ${id}, received message with id ${msg.id}`,
+                    );
+                    return;
+                }
+                set({ ...msg.content, id });
+            });
+            return unsubscribeFromRemote(id);
+        },
     );
-
-    subscribeToRemote(id, (msg) => {
-        if (msg.type !== 'update') return;
-        if (msg.id !== id) {
-            console.error(
-                `expected message with id ${id}, received message with id ${msg.id}`,
-            );
-            return;
-        }
-        set(msg.content);
-    });
 
     return {
         set: (v: Note) => {
@@ -66,5 +76,6 @@ export function createNoteStore(id: string) {
             ws.send(JSON.stringify(updateMessage));
             set(v);
         },
+        subscribe,
     };
 }

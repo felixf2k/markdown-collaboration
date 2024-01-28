@@ -13,7 +13,13 @@ function createTabStore() {
     };
 
     const open = (t: Tab) => {
-        update((current) => [...current, t]);
+        update((current) => {
+            if (current.find((c) => c.id === t.id)) {
+                activeTab.set(t);
+                return current;
+            }
+            return [...current, t];
+        });
         activeTab.set(t);
     };
 

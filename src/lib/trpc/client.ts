@@ -1,4 +1,4 @@
-import type { Router } from '$lib/server/router';
+import type { Router } from '$lib/trpc/router.server';
 import { createTRPCClient, type TRPCClientInit } from 'trpc-sveltekit';
 
 let browserClient: ReturnType<typeof createTRPCClient<Router>>;

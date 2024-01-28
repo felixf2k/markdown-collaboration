@@ -1,4 +1,6 @@
+import { NOTE_COLLECTION } from '$db/constants';
 import { MONGO_PASSWORD, MONGO_USERNAME } from '$env/static/private';
+import type { Note } from '$lib/schemas';
 import { MongoClient, type Document } from 'mongodb';
 
 const client = await new MongoClient(
@@ -14,3 +16,5 @@ const client = await new MongoClient(
 
 export const collection = <T extends Document>(collection: string) =>
     client.db('dynamic').collection<T>(collection);
+
+export const notes = collection<Note>(NOTE_COLLECTION);
