@@ -1,0 +1,15 @@
+{
+    "i18n-ally.localesPaths": ["src/lib/i18n/translations"],
+    "i18n-ally.keystyle": "flat",
+    "i18n-ally.sourceLanguage": "de",
+    "i18n-ally.regex.usageMatch": ["[^\\w\\d]\\$_\\(['\"`]({key})['\"`]"],
+    "i18n-ally.refactor.templates": [{ "template": "{$_('{key}')}" }],
+    "i18n-ally.tabStyle": "space",
+    "i18n-ally.indent": 4,
+    "svelte.enable-ts-plugin": true,
+    "todo-tree.tree.showBadges": false,
+    "typescript.preferences.importModuleSpecifier": "non-relative",
+    "svelte.plugin.svelte.compilerWarnings": {
+        "a11y-click-events-have-key-events": "ignore"
+    }
+}

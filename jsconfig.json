@@ -1,0 +1,16 @@
+{
+    "compilerOptions": {
+        "baseUrl": ".",
+        "paths": {
+            //Assuming your components/utilities live in ./src
+            //Update this path as necessary
+            "$lib": ["src/lib"],
+            "$components": ["src/lib/components"],
+            "$stores": ["src/lib/stores"],
+            "$functions": ["src/lib/functions"],
+            "$db": ["src/lib/server/mongo"]
+        }
+    },
+    //Add any build/compiled folders here to stop vscode searching those
+    "exclude": ["node_modules", "build"]
+}
