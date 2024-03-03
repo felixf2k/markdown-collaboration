@@ -1,11 +1,20 @@
 <script lang="ts">
+    import Content from '$components/Content.svelte';
     import Sidebar from '$components/Sidebar.svelte';
-    import Tabs from '$components/Tabs.svelte';
+    import { notes } from '$stores/notes.svelte.js';
 
-    export let data;
+    let { data } = $props();
+    $effect(() => {
+        notes.all = data.notes.map((n) => ({
+            title: n.title,
+            id: n.id,
+            active: false,
+            open: false,
+        }));
+    });
 </script>
 
 <div class="flex flex-row h-full w-full">
-    <Sidebar notes={data.notes} />
-    <Tabs />
+    <Sidebar />
+    <Content />
 </div>

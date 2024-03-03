@@ -4,6 +4,7 @@ export const NoteSchema = z.object({
     id: z.string(),
     title: z.string(),
     content: z.string(),
+    updateId: z.string().optional(),
 });
 export type Note = z.infer<typeof NoteSchema>;
 

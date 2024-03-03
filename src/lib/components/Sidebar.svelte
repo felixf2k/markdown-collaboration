@@ -1,27 +1,22 @@
 <script lang="ts">
-    import { browser } from '$app/environment';
     import { invalidateAll } from '$app/navigation';
     import Toggle from '$components/Toggle.svelte';
-    import type { Note } from '$lib/schemas';
     import { trpc } from '$lib/trpc/client';
-    import { tabs } from '$stores/tabs';
+    import { notes, type NoteTab } from '$stores/notes.svelte';
     import { toasts } from '$stores/toasts';
     import { faPlus } from '@fortawesome/pro-solid-svg-icons';
     import Fa from 'svelte-fa';
 
-    export let notes: Note[];
+    let darkMode = $state(true);
 
-    let darkMode = true;
-    $: {
-        if (browser) {
-            const html = document.getElementsByTagName('html')[0];
-            if (darkMode) {
-                html.className = 'dark';
-            } else {
-                html.className = '';
-            }
+    $effect(function updateDarkMode() {
+        const html = document.getElementsByTagName('html')[0];
+        if (darkMode) {
+            html.className = 'dark';
+        } else {
+            html.className = '';
         }
-    }
+    });
 
     const createNote = async () => {
         try {
@@ -29,7 +24,7 @@
                 content: '',
                 title: '',
             });
-            tabs.open({ id, title: 'New Note' });
+            notes.open(id);
             invalidateAll();
         } catch (error) {
             toasts.trigger({
@@ -39,42 +34,50 @@
         }
     };
 
-    const openNote = (note: Note) => {
-        tabs.open({
-            id: note.id,
-            title: note.title ?? 'New Note',
-        });
+    const openNote = (id: string) => {
+        notes.open(id);
     };
 </script>
 
+{#snippet noteRow(note: NoteTab)}
+    <button
+        type="button"
+        class="btn
+        block
+        gap-2
+        p-2
+        max-w-full
+        overflow-hidden
+        text-ellipsis
+        text-start
+        {note.open ? 'bg-surface-200-700-token' : ''}"
+        on:click={() => {
+            openNote(note.id);
+        }}
+    >
+        {#if note.title === ''}
+            New Note
+        {:else}
+            {note.title}
+        {/if}
+    </button>
+{/snippet}
+
 <div
-    class="flex flex-col shadow-xl h-full p-2 justify-between bg-surface-100-800-token"
+    class="flex flex-col shadow-xl h-full p-2 items-start overflow-hidden justify-between bg-surface-100-800-token w-64"
 >
-    <div class="flex flex-col">
+    <div class="flex flex-col gap-2 w-full overflow-hidden">
+        {#each notes.all as note (note.id)}
+            {@render noteRow(note)}
+        {/each}
         <button
-            class="btn flex flex-row items-center gap-2"
+            class="btn flex flex-row items-center gap-2 variant-ghost-primary"
             type="button"
             on:click={createNote}
         >
             New note
             <Fa icon={faPlus} />
         </button>
-        {#each notes as note (note.id)}
-            {note.id}
-            <button
-                type="button"
-                class="btn flex flex-row gap-2 p-2"
-                on:click={() => {
-                    openNote(note);
-                }}
-            >
-                {#if note.title === ''}
-                    New Note
-                {:else}
-                    {note.title}
-                {/if}
-            </button>
-        {/each}
     </div>
 
     <div class="flex flex-row items-center gap-2">

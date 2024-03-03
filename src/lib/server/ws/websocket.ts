@@ -12,6 +12,7 @@ export const createWebSocketServer = () => {
 
     wss.on('connection', async (ws) => {
         const subscriptions = new Set<string>();
+        let lastUpdates: string[] = [];
         const changeStream = notes.watch(undefined, {
             fullDocument: 'updateLookup',
         });
@@ -20,7 +21,11 @@ export const createWebSocketServer = () => {
             if (change.operationType !== 'update' || !change.fullDocument)
                 return;
             const note = stripMongoId(change.fullDocument);
-            if (!subscriptions.has(note.id)) return;
+            if (
+                !subscriptions.has(note.id) ||
+                lastUpdates.includes(note.updateId ?? '')
+            )
+                return;
             const updateMessage: WSMessage = {
                 type: 'update',
                 id: note.id,
@@ -33,7 +38,14 @@ export const createWebSocketServer = () => {
             const wsMsg = JSON.parse(message.toString()) as WSMessage;
             if (wsMsg.type === 'update') {
                 try {
-                    await upsertNote({ ...wsMsg.content, id: wsMsg.id });
+                    let updateId = Math.random().toString();
+                    lastUpdates.push(updateId);
+                    lastUpdates.slice(-1, undefined);
+                    await upsertNote({
+                        ...wsMsg.content,
+                        id: wsMsg.id,
+                        updateId,
+                    });
                 } catch (error) {
                     console.error(error);
                     const errorMsg: WSMessage = {
